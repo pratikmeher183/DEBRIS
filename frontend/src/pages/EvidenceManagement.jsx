@@ -165,8 +165,14 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
 
       {/* Register Evidence Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700 shadow-2xl my-auto">
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-start justify-center p-4 sm:p-6 overflow-y-auto pt-16 sm:pt-20 modal-backdrop-animate"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700 shadow-2xl modal-dialog-animate bg-[#0F172A]/95 text-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-gray-800 pb-3">
               <h2 className="text-lg font-bold text-white">Register Evidence (DRIA Auto-Index)</h2>
               <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white">

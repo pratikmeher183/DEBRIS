@@ -271,25 +271,35 @@ export default function CaseManagement({ onNavigateToNexus }) {
 
       {/* Case Detail Modal */}
       {selectedCase && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="max-w-2xl w-full glass-panel p-6 rounded-3xl space-y-6 max-h-[85vh] overflow-y-auto border border-gray-700 shadow-2xl my-auto">
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-start justify-center p-4 sm:p-6 overflow-y-auto pt-16 sm:pt-20 modal-backdrop-animate"
+          onClick={() => setSelectedCase(null)}
+        >
+          <div 
+            className="max-w-2xl w-full glass-panel p-6 sm:p-7 rounded-3xl space-y-6 max-h-[82vh] overflow-y-auto border border-gray-700/80 shadow-2xl modal-dialog-animate bg-[#0F172A]/95 text-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-start justify-between border-b border-gray-800 pb-4">
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">{selectedCase.case_id}</span>
+                  <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">{selectedCase.case_id}</span>
                   <h2 className="text-xl font-bold text-white">{selectedCase.case_title}</h2>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">{selectedCase.crime_type} • Lead Inspector: {selectedCase.lead_officer_name || 'Rahul Verma'}</p>
+                <p className="text-xs text-gray-400 mt-1.5">{selectedCase.crime_type} • Lead Inspector: {selectedCase.lead_officer_name || 'Rahul Verma'}</p>
               </div>
-              <button onClick={() => setSelectedCase(null)} className="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white">
+              <button 
+                onClick={() => setSelectedCase(null)} 
+                className="p-2 rounded-xl bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                title="Close"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Solved Decision Status Banner inside Modal */}
-            <div className="p-4 rounded-2xl bg-gray-900/80 border border-gray-800 flex items-center justify-between">
+            <div className="p-4.5 rounded-2xl bg-gray-900/90 border border-gray-800 flex items-center justify-between gap-4">
               <div>
-                <div className="text-xs font-bold text-gray-300">Case Investigation Resolution Status</div>
+                <div className="text-xs font-bold text-gray-200">Case Investigation Resolution Status</div>
                 <div className="text-xs text-gray-400 mt-0.5">
                   Current Status: <span className={`font-bold ${selectedCase.status === 'Solved' ? 'text-emerald-400' : 'text-cyan-400'}`}>{selectedCase.status}</span>
                 </div>
@@ -298,13 +308,13 @@ export default function CaseManagement({ onNavigateToNexus }) {
               {selectedCase.status !== 'Solved' ? (
                 <button
                   onClick={() => handleMarkSolved(selectedCase.case_id, selectedCase.case_title)}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 flex items-center space-x-2 transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 flex items-center space-x-2 transition-all shrink-0"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Mark Case as Solved & Close FIR</span>
                 </button>
               ) : (
-                <div className="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center space-x-2">
+                <div className="px-4 py-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center space-x-2 shrink-0">
                   <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span>Case Solved & Archived in Solved Record</span>
                 </div>
@@ -369,8 +379,14 @@ export default function CaseManagement({ onNavigateToNexus }) {
 
       {/* Register New Case Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700 shadow-2xl my-auto">
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-start justify-center p-4 sm:p-6 overflow-y-auto pt-16 sm:pt-20 modal-backdrop-animate"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700 shadow-2xl modal-dialog-animate bg-[#0F172A]/95 text-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-gray-800 pb-3">
               <h2 className="text-lg font-bold text-white">Register New FIR & Case</h2>
               <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white">
