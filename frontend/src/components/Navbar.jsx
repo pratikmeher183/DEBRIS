@@ -3,7 +3,7 @@ import { ShieldAlert, Zap, LogOut, User, Bell } from 'lucide-react';
 
 export default function Navbar({ user, onLogout }) {
   return (
-    <header className="h-16 border-b border-gray-800 bg-[#0F1523]/80 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between">
+    <header className="h-16 border-b border-gray-800 bg-[#0F1523]/80 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between">
       {/* Brand & Logo */}
       <div className="flex items-center space-x-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">

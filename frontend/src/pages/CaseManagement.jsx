@@ -271,8 +271,8 @@ export default function CaseManagement({ onNavigateToNexus }) {
 
       {/* Case Detail Modal */}
       {selectedCase && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-3xl w-full glass-panel p-6 rounded-3xl space-y-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="max-w-2xl w-full glass-panel p-6 rounded-3xl space-y-6 max-h-[85vh] overflow-y-auto border border-gray-700 shadow-2xl my-auto">
             <div className="flex items-start justify-between border-b border-gray-800 pb-4">
               <div>
                 <div className="flex items-center space-x-2">
@@ -369,8 +369,8 @@ export default function CaseManagement({ onNavigateToNexus }) {
 
       {/* Register New Case Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="max-w-lg w-full glass-panel p-6 rounded-3xl space-y-5 border border-gray-700 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-gray-800 pb-3">
               <h2 className="text-lg font-bold text-white">Register New FIR & Case</h2>
               <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white">
