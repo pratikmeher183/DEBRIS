@@ -131,11 +131,11 @@ export default function Dashboard({ onNavigate }) {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right space-y-1.5 flex flex-col items-end shrink-0">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                  <div className="shrink-0 flex flex-col items-end space-y-1">
+                    <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap leading-none">
                       Score: {act.new_score}%
-                    </span>
-                    <div className="text-[10px] text-gray-500 whitespace-nowrap">{new Date(act.changed_at).toLocaleDateString()}</div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 font-mono whitespace-nowrap">{new Date(act.changed_at).toLocaleDateString()}</div>
                   </div>
                 </div>
               ))

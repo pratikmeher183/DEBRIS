@@ -332,10 +332,10 @@ export default function CaseManagement({ onNavigateToNexus }) {
                         </div>
                         <div className="text-xs text-gray-400 mt-1 font-mono">Match Signature: {conn.match_value}</div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 whitespace-nowrap inline-flex items-center">
-                          {conn.score}% Confidence
-                        </span>
+                      <div className="text-right shrink-0">
+                        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap leading-none">
+                          Score: {conn.score}%
+                        </div>
                       </div>
                     </div>
                   ))
