@@ -50,3 +50,124 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #374151;
 }
+
+/* Custom Officer DERIS Login Form Styles */
+.deris-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 0.4em;
+  background-color: #171717;
+  border-radius: 25px;
+  transition: .4s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.deris-login-form:hover {
+  transform: scale(1.02);
+  border: 1px solid #3B82F6;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+}
+
+.deris-login-heading {
+  text-align: center;
+  margin-top: 1.5em;
+  margin-bottom: 1em;
+  color: rgb(255, 255, 255);
+  font-size: 1.3em;
+  font-weight: 700;
+}
+
+.deris-field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border-radius: 25px;
+  padding: 0.7em 1em;
+  border: none;
+  outline: none;
+  color: white;
+  background-color: #171717;
+  box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+}
+
+.deris-input-icon {
+  height: 1.3em;
+  width: 1.3em;
+  fill: #3B82F6;
+  flex-shrink: 0;
+}
+
+.deris-input-field {
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: #d3d3d3;
+  font-size: 0.9em;
+}
+
+.deris-login-form .btn {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 1.8em;
+}
+
+.button1 {
+  padding: 0.6em 1.5em;
+  border-radius: 8px;
+  margin-right: 0.5em;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: #2563EB;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button1:hover {
+  background-color: #1D4ED8;
+  color: white;
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+}
+
+.button2 {
+  padding: 0.6em 2em;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: #252525;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button2:hover {
+  background-color: #374151;
+  color: white;
+}
+
+.button3 {
+  margin-bottom: 2em;
+  margin-top: 0.5em;
+  padding: 0.5em;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: transparent;
+  color: #9CA3AF;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.button3:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
