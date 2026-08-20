@@ -401,7 +401,7 @@ export default function RelationshipNexus({ focusCaseId }) {
                   </td>
                   <td className="p-4 font-mono text-gray-200">{link.match_value}</td>
                   <td className="p-4">
-                    <span className="px-2.5 py-1 rounded-full font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                       {link.score}%
                     </span>
                   </td>
