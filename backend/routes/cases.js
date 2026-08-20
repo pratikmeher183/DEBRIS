@@ -105,12 +105,24 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PATCH /api/cases/:id/status - Update Case Status
+// PATCH /api/cases/:id/status - Update Case Status (e.g. Mark Solved)
 router.patch('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
-    await dbRun('UPDATE cases SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE case_id = ?', [status, req.params.id]);
-    res.json({ message: 'Case status updated successfully' });
+    const caseId = req.params.id;
+
+    // Update Case status
+    await dbRun('UPDATE cases SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE case_id = ?', [status, caseId]);
+
+    // Get fir_id for this case
+    const cData = await dbGet('SELECT fir_id FROM cases WHERE case_id = ?', [caseId]);
+
+    // If case is Solved or Closed, automatically update FIR status to Closed
+    if (cData && cData.fir_id && (status === 'Solved' || status === 'Closed')) {
+      await dbRun('UPDATE firs SET status = ? WHERE fir_id = ?', ['Closed', cData.fir_id]);
+    }
+
+    res.json({ message: `Case ${caseId} status updated to ${status} and saved to Solved record.` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -11,7 +11,10 @@ import {
   MapPin, 
   Calendar,
   X,
-  FileText
+  FileText,
+  CheckCircle2,
+  CheckCircle,
+  Archive
 } from 'lucide-react';
 
 export default function CaseManagement({ onNavigateToNexus }) {
@@ -20,6 +23,7 @@ export default function CaseManagement({ onNavigateToNexus }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedCase, setSelectedCase] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [solvedNotice, setSolvedNotice] = useState(null);
 
   // New Case Form State
   const [formData, setFormData] = useState({
@@ -52,6 +56,25 @@ export default function CaseManagement({ onNavigateToNexus }) {
         }
       })
       .catch((err) => console.log('Error loading case detail:', err));
+  };
+
+  const handleMarkSolved = (caseId, title) => {
+    fetch(`/api/cases/${caseId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'Solved' })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        fetchCases();
+        if (selectedCase && selectedCase.case_id === caseId) {
+          setSelectedCase({ ...selectedCase, status: 'Solved' });
+        }
+        setSolvedNotice(`Case ${caseId} (${title || ''}) marked as SOLVED! FIR closed and saved to Solved tab.`);
+        setStatusFilter('Solved');
+        setTimeout(() => setSolvedNotice(null), 6000);
+      })
+      .catch((err) => console.log('Error marking case solved:', err));
   };
 
   const handleCreateCase = (e) => {
@@ -105,6 +128,19 @@ export default function CaseManagement({ onNavigateToNexus }) {
         </button>
       </div>
 
+      {/* Solved Notification Banner */}
+      {solvedNotice && (
+        <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 flex items-center justify-between shadow-xl animate-pulse">
+          <div className="flex items-center space-x-3 text-xs font-semibold">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <span>{solvedNotice}</span>
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            STATUS: SOLVED
+          </span>
+        </div>
+      )}
+
       {/* Search & Filter Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl glass-panel">
         <div className="relative flex-1">
@@ -118,22 +154,32 @@ export default function CaseManagement({ onNavigateToNexus }) {
           />
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
           <Filter className="w-4 h-4 text-gray-400" />
           <span className="text-xs text-gray-400 font-medium">Status:</span>
-          {['ALL', 'Active', 'Open', 'Under Review', 'Solved'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                statusFilter === st
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+          {['ALL', 'Active', 'Open', 'Under Review', 'Solved'].map((st) => {
+            const count = cases.filter(c => st === 'ALL' || c.status === st).length;
+            return (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                  statusFilter === st
+                    ? st === 'Solved'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25'
+                      : 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                    : 'bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                }`}
+              >
+                <span>{st}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  statusFilter === st ? 'bg-white/20 text-white' : 'bg-gray-700 text-gray-300'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -149,7 +195,7 @@ export default function CaseManagement({ onNavigateToNexus }) {
               <th className="p-4">Status</th>
               <th className="p-4">Evidence</th>
               <th className="p-4">Pre-Indexed Links</th>
-              <th className="p-4 text-right">Actions</th>
+              <th className="p-4 text-right">Actions & Solved Option</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800 text-xs">
@@ -171,8 +217,12 @@ export default function CaseManagement({ onNavigateToNexus }) {
                   </span>
                 </td>
                 <td className="p-4">
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {c.status}
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
+                    c.status === 'Solved' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold' 
+                      : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  }`}>
+                    {c.status === 'Solved' ? '✓ Solved' : c.status}
                   </span>
                 </td>
                 <td className="p-4 font-mono text-gray-300">{c.total_evidence || 0} items</td>
@@ -186,13 +236,32 @@ export default function CaseManagement({ onNavigateToNexus }) {
                   </button>
                 </td>
                 <td className="p-4 text-right">
-                  <button
-                    onClick={() => handleOpenDetail(c.case_id)}
-                    className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white hover:bg-blue-600 transition-all"
-                    title="View Full Case Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center justify-end space-x-2">
+                    {/* Mark Solved Action Button */}
+                    {c.status !== 'Solved' ? (
+                      <button
+                        onClick={() => handleMarkSolved(c.case_id, c.case_title)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/40 text-xs font-semibold flex items-center space-x-1 transition-all shadow"
+                        title="Mark Case as Solved"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Mark Solved</span>
+                      </button>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center space-x-1">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Solved</span>
+                      </span>
+                    )}
+
+                    <button
+                      onClick={() => handleOpenDetail(c.case_id)}
+                      className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white hover:bg-blue-600 transition-all"
+                      title="View Full Case Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -215,6 +284,31 @@ export default function CaseManagement({ onNavigateToNexus }) {
               <button onClick={() => setSelectedCase(null)} className="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Solved Decision Status Banner inside Modal */}
+            <div className="p-4 rounded-2xl bg-gray-900/80 border border-gray-800 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-gray-300">Case Investigation Resolution Status</div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  Current Status: <span className={`font-bold ${selectedCase.status === 'Solved' ? 'text-emerald-400' : 'text-cyan-400'}`}>{selectedCase.status}</span>
+                </div>
+              </div>
+
+              {selectedCase.status !== 'Solved' ? (
+                <button
+                  onClick={() => handleMarkSolved(selectedCase.case_id, selectedCase.case_title)}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 flex items-center space-x-2 transition-all"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Mark Case as Solved & Close FIR</span>
+                </button>
+              ) : (
+                <div className="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <span>Case Solved & Archived in Solved Record</span>
+                </div>
+              )}
             </div>
 
             {/* Pre-Indexed Case Connections (DERIS Hero Feature) */}
