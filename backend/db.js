@@ -6,7 +6,8 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, 'deris.db');
+const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const dbPath = isVercel ? path.join('/tmp', 'deris.db') : path.join(__dirname, 'deris.db');
 const db = new sqlite3.Database(dbPath);
 
 // Helper for promise-based database queries

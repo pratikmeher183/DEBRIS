@@ -39,8 +39,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`========================================================`);
-  console.log(`  DERIS Backend Engine Running on http://localhost:${PORT}`);
-  console.log(`========================================================`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`========================================================`);
+    console.log(`  DERIS Backend Engine Running on http://localhost:${PORT}`);
+    console.log(`========================================================`);
+  });
+}
+
+export default app;
