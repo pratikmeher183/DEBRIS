@@ -2,8 +2,14 @@
   "name": "deris-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "start": "cd backend && node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.7"
   }
 }
