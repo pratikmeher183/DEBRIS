@@ -197,7 +197,51 @@
   animation: backdropFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.modal-dialog-animate {
-  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.font-tech {
+  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
 }
+
+.font-heading {
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+/* Tactical HUD Panels */
+.tactical-panel {
+  background: rgba(10, 16, 28, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.03);
+}
+
+.tactical-panel-active {
+  background: rgba(13, 22, 38, 0.95);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.12);
+}
+
+.tactical-card {
+  background: #0B1220;
+  border: 1px solid #1E293B;
+}
+
+.glow-cyan-box {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+}
+
+.glow-red-box {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Tactical Scanlines */
+.scanline-bg {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.3)
+  );
+  background-size: 100% 4px;
+}
+
 
