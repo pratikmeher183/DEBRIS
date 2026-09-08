@@ -112,9 +112,9 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
 
       {/* DRIA Trigger Notification Toast */}
       {driaAlert && (
-        <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 flex items-center justify-between shadow-xl animate-bounce">
+        <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl animate-bounce">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
@@ -124,7 +124,7 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
           </div>
           <button
             onClick={() => onNavigateToNexus && onNavigateToNexus()}
-            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow"
+            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow w-full sm:w-auto"
           >
             View Relationship Index →
           </button>

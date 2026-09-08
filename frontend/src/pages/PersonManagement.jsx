@@ -25,7 +25,7 @@ export default function PersonManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center space-x-3 border-b border-gray-800 pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-gray-800 pb-3">
         {[
           { id: 'suspects', label: `Suspects (${suspects.length})` },
           { id: 'victims', label: `Victims (${victims.length})` },

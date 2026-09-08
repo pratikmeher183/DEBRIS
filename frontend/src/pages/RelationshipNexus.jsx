@@ -240,11 +240,11 @@ export default function RelationshipNexus({ focusCaseId }) {
       {/* Hero Title Banner */}
       <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-950 via-gray-900 to-indigo-950 border border-blue-500/30 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center shrink-0">
               <GitMerge className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-extrabold text-white">Relationship Index & Evidence Nexus</h1>
+            <h1 className="text-lg sm:text-2xl font-extrabold text-white">Relationship Index & Evidence Nexus</h1>
             <span className="px-3 py-0.5 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">PATENTED INNOVATION ⭐</span>
           </div>
           <p className="text-xs text-gray-400">Pre-computed cross-case correlations updated automatically by DRIA DBMS triggers.</p>
@@ -266,7 +266,7 @@ export default function RelationshipNexus({ focusCaseId }) {
             <Network className="w-4 h-4 text-cyan-400" />
             <h2 className="text-sm font-bold text-white">Interactive Case Investigation Network Graph</h2>
           </div>
-          <div className="flex items-center space-x-4 text-xs">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
             <span className="flex items-center space-x-1.5 text-blue-400"><span className="w-3 h-3 rounded-full bg-blue-600 inline-block"></span><span>Case Nodes</span></span>
             <span className="flex items-center space-x-1.5 text-amber-400"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>Suspects</span></span>
             <span className="flex items-center space-x-1.5 text-cyan-400"><span className="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span><span>DRIA Correlations</span></span>
@@ -359,7 +359,7 @@ export default function RelationshipNexus({ focusCaseId }) {
             <span>Master Relationship Index Table (`Relationship_Index`)</span>
           </h2>
 
-          <div className="flex items-center space-x-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-gray-400 font-medium">Filter Type:</span>
             {['ALL', 'Phone', 'Vehicle', 'Weapon', 'Fingerprint', 'DNA'].map((t) => (
               <button
@@ -376,7 +376,9 @@ export default function RelationshipNexus({ focusCaseId }) {
         </div>
 
         <div className="rounded-2xl glass-panel overflow-hidden border border-gray-800">
-          <table className="w-full text-left border-collapse">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
                 <th className="p-4">Link ID</th>
@@ -414,6 +416,35 @@ export default function RelationshipNexus({ focusCaseId }) {
               ))}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="grid grid-cols-1 gap-3 p-3 md:hidden">
+            {filteredLinks.map((link) => (
+              <div key={link.link_id} className="p-3 rounded-xl bg-gray-900/60 border border-gray-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-cyan-400 text-[10px]">{link.link_id}</span>
+                  <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-mono font-bold text-[10px]">
+                    {link.match_type}
+                  </span>
+                </div>
+                <div className="text-xs">
+                  <div className="text-white font-semibold">{link.source_case_id}: {link.source_case_title}</div>
+                  <div className="text-gray-500 text-[10px] my-0.5">↕ linked to</div>
+                  <div className="text-cyan-300 font-semibold">{link.target_case_id}: {link.target_case_title}</div>
+                </div>
+                <div className="text-[10px] text-gray-400 font-mono">Signature: {link.match_value}</div>
+                <div className="flex items-center justify-between">
+                  <div className="inline-flex items-center px-2.5 py-0.5 rounded-full font-mono font-bold text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Score: {link.score}%
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    {link.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

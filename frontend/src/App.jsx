@@ -23,6 +23,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [focusCaseId, setFocusCaseId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleNavigateToNexus = (caseId = null) => {
     setFocusCaseId(caseId);
@@ -36,15 +37,24 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0B0F19] text-gray-100 flex flex-col font-sans">
       {/* Top Navigation Bar */}
-      <Navbar user={user} onLogout={() => setUser(null)} />
+      <Navbar 
+        user={user} 
+        onLogout={() => setUser(null)} 
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
 
       {/* Main App Workspace */}
       <div className="flex flex-1">
         {/* Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
 
         {/* Page Content Viewport */}
-        <main className="flex-1 p-8 overflow-y-auto max-w-7xl">
+        <main className="flex-1 p-3 sm:p-5 md:p-8 overflow-y-auto max-w-7xl w-full">
           {activeTab === 'dashboard' && <Dashboard onNavigate={(tab) => setActiveTab(tab)} />}
           {activeTab === 'cases' && <CaseManagement onNavigateToNexus={handleNavigateToNexus} />}
           {activeTab === 'evidence' && <EvidenceManagement onNavigateToNexus={handleNavigateToNexus} />}

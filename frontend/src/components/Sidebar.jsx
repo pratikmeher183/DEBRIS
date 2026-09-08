@@ -7,10 +7,11 @@ import {
   GitMerge, 
   BarChart3, 
   BookOpen,
-  Zap
+  Zap,
+  X
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'cases', label: 'Case Management', icon: Briefcase },
@@ -27,11 +28,23 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     { id: 'docs', label: 'Documentation', icon: BookOpen }
   ];
 
-  return (
-    <aside className="w-64 border-r border-gray-800 bg-[#0C101C] flex flex-col justify-between py-6 px-3 min-h-[calc(100vh-4rem)]">
+  const handleItemClick = (id) => {
+    setActiveTab(id);
+    if (onClose) onClose();
+  };
+
+  const sidebarContent = (
+    <>
       <div className="space-y-1">
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 flex items-center justify-between">
           <p className="text-[10px] font-mono font-bold tracking-widest text-gray-500 uppercase">Navigation Menu</p>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-lg bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -39,7 +52,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleItemClick(item.id)}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
                   ? item.highlight
@@ -74,6 +87,30 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           Pre-indexed evidence correlation layer replaces heavy SQL JOIN scans across 14 tables.
         </p>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar — always visible on md+ */}
+      <aside className="hidden md:flex w-64 border-r border-gray-800 bg-[#0C101C] flex-col justify-between py-6 px-3 min-h-[calc(100vh-4rem)]">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Sidebar — overlay drawer */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm modal-backdrop-animate"
+            onClick={onClose}
+          />
+          {/* Drawer Panel */}
+          <aside className="relative w-64 bg-[#0C101C] border-r border-gray-800 flex flex-col justify-between py-6 px-3 min-h-screen sidebar-drawer-animate z-50">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

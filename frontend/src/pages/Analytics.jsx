@@ -46,7 +46,7 @@ export default function Analytics() {
       <div className="rounded-2xl glass-panel p-6 border border-gray-800 space-y-4">
         <h2 className="text-sm font-bold text-white">Empirical Scaling Latency Benchmark (Milliseconds)</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[550px]">
             <thead>
               <tr className="border-b border-gray-800 text-[11px] font-mono font-bold text-gray-400 uppercase">
                 <th className="p-3">Database Dataset Scale (Records)</th>

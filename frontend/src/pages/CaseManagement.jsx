@@ -154,9 +154,9 @@ export default function CaseManagement({ onNavigateToNexus }) {
           />
         </div>
 
-        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-xs text-gray-400 font-medium">Status:</span>
+        <div className="flex items-center flex-wrap gap-2">
+          <Filter className="w-4 h-4 text-gray-400 hidden sm:block" />
+          <span className="text-xs text-gray-400 font-medium hidden sm:block">Status:</span>
           {['ALL', 'Active', 'Open', 'Under Review', 'Solved'].map((st) => {
             const count = cases.filter(c => st === 'ALL' || c.status === st).length;
             return (
@@ -183,90 +183,154 @@ export default function CaseManagement({ onNavigateToNexus }) {
         </div>
       </div>
 
-      {/* Cases Table */}
+      {/* Cases Table & Mobile Cards */}
       <div className="rounded-2xl glass-panel overflow-hidden border border-gray-800">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
-              <th className="p-4">Case ID</th>
-              <th className="p-4">Case Title & FIR</th>
-              <th className="p-4">Crime Type</th>
-              <th className="p-4">Priority</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Evidence</th>
-              <th className="p-4">Pre-Indexed Links</th>
-              <th className="p-4 text-right">Actions & Solved Option</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800 text-xs">
-            {filteredCases.map((c) => (
-              <tr key={c.case_id} className="hover:bg-gray-800/40 transition-colors group">
-                <td className="p-4 font-mono font-bold text-cyan-400">{c.case_id}</td>
-                <td className="p-4 space-y-0.5">
-                  <div className="font-semibold text-white group-hover:text-blue-400 transition-colors">{c.case_title}</div>
-                  <div className="text-[11px] text-gray-500 font-mono">{c.fir_number || 'FIR-PENDING'}</div>
-                </td>
-                <td className="p-4 text-gray-300">{c.crime_type}</td>
-                <td className="p-4">
-                  <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase font-mono ${
+        <div className="hidden md:block w-full overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                <th className="p-4">Case ID</th>
+                <th className="p-4">Case Title & FIR</th>
+                <th className="p-4">Crime Type</th>
+                <th className="p-4">Priority</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Evidence</th>
+                <th className="p-4">Pre-Indexed Links</th>
+                <th className="p-4 text-right">Actions & Solved Option</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800 text-xs">
+              {filteredCases.map((c) => (
+                <tr key={c.case_id} className="hover:bg-gray-800/40 transition-colors group">
+                  <td className="p-4 font-mono font-bold text-cyan-400">{c.case_id}</td>
+                  <td className="p-4 space-y-0.5">
+                    <div className="font-semibold text-white group-hover:text-blue-400 transition-colors">{c.case_title}</div>
+                    <div className="text-[11px] text-gray-500 font-mono">{c.fir_number || 'FIR-PENDING'}</div>
+                  </td>
+                  <td className="p-4 text-gray-300">{c.crime_type}</td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase font-mono ${
+                      c.priority === 'Critical' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
+                      c.priority === 'High' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                      'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    }`}>
+                      {c.priority}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
+                      c.status === 'Solved' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold' 
+                        : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                    }`}>
+                      {c.status === 'Solved' ? '✓ Solved' : c.status}
+                    </span>
+                  </td>
+                  <td className="p-4 font-mono text-gray-300">{c.total_evidence || 0} items</td>
+                  <td className="p-4">
+                    <button 
+                      onClick={() => onNavigateToNexus && onNavigateToNexus(c.case_id)}
+                      className="flex items-center space-x-1.5 text-cyan-400 hover:text-cyan-300 font-mono font-bold"
+                    >
+                      <GitMerge className="w-3.5 h-3.5" />
+                      <span>{c.linked_cases_count || 0} Linked Cases</span>
+                    </button>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      {/* Mark Solved Action Button */}
+                      {c.status !== 'Solved' ? (
+                        <button
+                          onClick={() => handleMarkSolved(c.case_id, c.case_title)}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/40 text-xs font-semibold flex items-center space-x-1 transition-all shadow"
+                          title="Mark Case as Solved"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Mark Solved</span>
+                        </button>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center space-x-1">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Solved</span>
+                        </span>
+                      )}
+
+                      <button
+                        onClick={() => handleOpenDetail(c.case_id)}
+                        className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white hover:bg-blue-600 transition-all"
+                        title="View Full Case Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards Layout */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {filteredCases.map((c) => (
+            <div key={c.case_id} className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 flex flex-col space-y-3 relative">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <div className="text-cyan-400 font-mono font-bold text-[10px]">{c.case_id}</div>
+                  <div className="font-semibold text-white text-sm mt-0.5">{c.case_title}</div>
+                  <div className="text-[10px] text-gray-500 font-mono mt-0.5">{c.fir_number || 'FIR-PENDING'}</div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase font-mono ${
                     c.priority === 'Critical' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
                     c.priority === 'High' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
                     'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                   }`}>
                     {c.priority}
                   </span>
-                </td>
-                <td className="p-4">
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border ${
                     c.status === 'Solved' 
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                       : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                   }`}>
                     {c.status === 'Solved' ? '✓ Solved' : c.status}
                   </span>
-                </td>
-                <td className="p-4 font-mono text-gray-300">{c.total_evidence || 0} items</td>
-                <td className="p-4">
-                  <button 
-                    onClick={() => onNavigateToNexus && onNavigateToNexus(c.case_id)}
-                    className="flex items-center space-x-1.5 text-cyan-400 hover:text-cyan-300 font-mono font-bold"
-                  >
-                    <GitMerge className="w-3.5 h-3.5" />
-                    <span>{c.linked_cases_count || 0} Linked Cases</span>
-                  </button>
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex items-center justify-end space-x-2">
-                    {/* Mark Solved Action Button */}
-                    {c.status !== 'Solved' ? (
-                      <button
-                        onClick={() => handleMarkSolved(c.case_id, c.case_title)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/40 text-xs font-semibold flex items-center space-x-1 transition-all shadow"
-                        title="Mark Case as Solved"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Mark Solved</span>
-                      </button>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center space-x-1">
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Solved</span>
-                      </span>
-                    )}
-
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] py-2 border-y border-gray-800/60">
+                <span className="text-gray-300">{c.crime_type}</span>
+                <span className="text-gray-400 font-mono">{c.total_evidence || 0} evidence</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <button 
+                  onClick={() => onNavigateToNexus && onNavigateToNexus(c.case_id)}
+                  className="flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 font-mono font-bold text-[10px]"
+                >
+                  <GitMerge className="w-3.5 h-3.5" />
+                  <span>{c.linked_cases_count || 0} Links</span>
+                </button>
+                <div className="flex items-center space-x-2">
+                  {c.status !== 'Solved' && (
                     <button
-                      onClick={() => handleOpenDetail(c.case_id)}
-                      className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white hover:bg-blue-600 transition-all"
-                      title="View Full Case Details"
+                      onClick={() => handleMarkSolved(c.case_id, c.case_title)}
+                      className="p-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 flex items-center space-x-1"
                     >
-                      <Eye className="w-4 h-4" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold pr-1">Solve</span>
                     </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  )}
+                  <button
+                    onClick={() => handleOpenDetail(c.case_id)}
+                    className="p-1.5 rounded-lg bg-gray-800 text-gray-300 flex items-center space-x-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-semibold pr-1">View</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Case Detail Modal */}

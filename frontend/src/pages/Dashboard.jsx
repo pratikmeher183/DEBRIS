@@ -47,17 +47,17 @@ export default function Dashboard({ onNavigate }) {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-gray-900 via-gray-900 to-blue-950/60 border border-gray-800 shadow-xl">
         <div className="space-y-1">
-          <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-extrabold text-white">Investigation Command Center</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white">Investigation Command Center</h1>
             <span className="px-3 py-0.5 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">DBMS DRIA ENGINE</span>
           </div>
           <p className="text-xs text-gray-400">Automated relationship indexing active. Cross-case evidence correlations pre-computed in real time.</p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => onNavigate('cases')}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/25 transition-all"
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/25 transition-all w-full sm:w-auto"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Register New Case</span>
@@ -65,7 +65,7 @@ export default function Dashboard({ onNavigate }) {
 
           <button
             onClick={() => onNavigate('nexus')}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 font-semibold text-xs transition-all"
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 font-semibold text-xs transition-all w-full sm:w-auto"
           >
             <GitMerge className="w-4 h-4" />
             <span>Open Evidence Nexus</span>

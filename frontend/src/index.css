@@ -201,3 +201,27 @@
   animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Mobile Sidebar Drawer */
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-drawer-animate {
+  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mobile Case Cards — hide table headers on small screens */
+@media (max-width: 767px) {
+  .mobile-hide-table {
+    display: none !important;
+  }
+  .mobile-show-cards {
+    display: block !important;
+  }
+}
+

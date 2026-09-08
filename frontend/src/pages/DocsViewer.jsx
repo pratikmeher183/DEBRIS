@@ -16,7 +16,7 @@ export default function DocsViewer() {
           <p className="text-xs text-gray-400">Complete IEEE paper draft, SRS, ER diagrams, and academic report.</p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-gray-900 p-1 rounded-2xl border border-gray-800 self-start">
+        <div className="flex flex-wrap gap-2 bg-gray-900 p-1 rounded-2xl border border-gray-800 self-start">
           {[
             { id: 'paper', label: 'IEEE Research Paper' },
             { id: 'er', label: 'ER Diagram & Schemas' },
@@ -39,7 +39,7 @@ export default function DocsViewer() {
       </div>
 
       {/* Doc Viewer Content */}
-      <div className="glass-panel p-8 rounded-3xl border border-gray-800 space-y-6 leading-relaxed max-w-5xl mx-auto">
+      <div className="glass-panel p-4 sm:p-6 md:p-8 rounded-3xl border border-gray-800 space-y-6 leading-relaxed max-w-5xl mx-auto">
         {docType === 'paper' && (
           <div className="space-y-6 text-xs text-gray-300">
             <div className="text-center space-y-2 border-b border-gray-800 pb-6">
