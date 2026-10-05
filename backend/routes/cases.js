@@ -80,28 +80,50 @@ router.post('/', async (req, res) => {
   try {
     const { case_title, crime_type, priority, location, incident_date, lead_officer_id, description } = req.body;
     
-    const firId = `FIR-${Date.now()}`;
-    const firNumber = `FIR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
-    const caseId = `C${Math.floor(300 + Math.random() * 900)}`;
+    if (!case_title) {
+      return res.status(400).json({ error: 'Case title is required' });
+    }
+
+    const now = Date.now();
+    const nowIso = new Date().toISOString();
+    const firId = `FIR-${now}`;
+    const firNumber = `FIR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    
+    // Generate guaranteed unique case_id
+    let caseId = '';
+    let exists = true;
+    let attempts = 0;
+    while (exists && attempts < 50) {
+      attempts++;
+      const randNum = Math.floor(350 + Math.random() * 9500);
+      caseId = `C${randNum}`;
+      const existingRow = await dbGet('SELECT case_id FROM cases WHERE case_id = ?', [caseId]);
+      if (!existingRow) exists = false;
+    }
+    if (exists) {
+      caseId = `C${now.toString().slice(-5)}`;
+    }
 
     await dbRun(
       `INSERT INTO firs (fir_id, fir_number, station_id, incident_date, incident_type, location, status)
        VALUES (?, ?, 'STN-01', ?, ?, ?, 'Investigating')`,
-      [firId, firNumber, incident_date || new Date().toISOString(), crime_type, location || 'Bhubaneswar']
+      [firId, firNumber, incident_date || nowIso, crime_type || 'General Offense', location || 'Bhubaneswar']
     );
 
     await dbRun(
-      `INSERT INTO cases (case_id, fir_id, case_title, crime_type, status, priority, lead_officer_id)
-       VALUES (?, ?, ?, ?, 'Active', ?, ?)`,
-      [caseId, firId, case_title, crime_type, priority || 'Medium', lead_officer_id || 'OFF-102']
+      `INSERT INTO cases (case_id, fir_id, case_title, crime_type, status, priority, lead_officer_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'Active', ?, ?, ?, ?)`,
+      [caseId, firId, case_title, crime_type || 'General Offense', priority || 'Medium', lead_officer_id || 'OFF-102', nowIso, nowIso]
     );
 
     res.status(201).json({
       message: 'Case registered successfully',
       case_id: caseId,
-      fir_number: firNumber
+      fir_number: firNumber,
+      created_at: nowIso
     });
   } catch (err) {
+    console.error('Error creating case in database:', err);
     res.status(500).json({ error: err.message });
   }
 });

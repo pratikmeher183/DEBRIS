@@ -84,8 +84,11 @@ export default function CaseManagement({ onNavigateToNexus }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Failed to register case');
+        }
         setShowModal(false);
         fetchCases();
         setFormData({
@@ -96,7 +99,10 @@ export default function CaseManagement({ onNavigateToNexus }) {
           incident_date: new Date().toISOString().slice(0, 16)
         });
       })
-      .catch((err) => console.log('Error creating case:', err));
+      .catch((err) => {
+        console.error('Error creating case:', err);
+        alert('Case Registration Failed: ' + err.message);
+      });
   };
 
   const filteredCases = cases.filter((c) => {
