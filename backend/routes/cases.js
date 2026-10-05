@@ -6,6 +6,7 @@ const router = express.Router();
 // GET /api/cases - List all cases with evidence counts & linked case counts
 router.get('/', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const cases = await dbQuery(`
       SELECT 
         c.*, 

@@ -6,7 +6,6 @@ import {
   Users, 
   GitMerge, 
   BarChart3, 
-  BookOpen,
   Zap,
   X
 } from 'lucide-react';
@@ -24,8 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
       badge: 'HERO',
       highlight: true 
     },
-    { id: 'analytics', label: 'DBMS Benchmark', icon: BarChart3 },
-    { id: 'docs', label: 'Documentation', icon: BookOpen }
+    { id: 'analytics', label: 'DBMS Benchmark', icon: BarChart3 }
   ];
 
   const handleItemClick = (id) => {

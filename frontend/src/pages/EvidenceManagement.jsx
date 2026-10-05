@@ -33,18 +33,20 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
   });
 
   const fetchData = () => {
-    fetch('/api/evidence')
+    fetch(`/api/evidence?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setEvidenceList(data);
       });
 
-    fetch('/api/cases')
+    fetch(`/api/cases?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
           setCasesList(data);
-          if (data.length > 0) setSelectedCaseId(data[0].case_id);
+          if (data.length > 0) {
+            setSelectedCaseId((prev) => (prev && data.some(c => c.case_id === prev) ? prev : data[0].case_id));
+          }
         }
       });
   };
@@ -52,6 +54,21 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (showModal) {
+      fetch(`/api/cases?t=${Date.now()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setCasesList(data);
+            if (data.length > 0) {
+              setSelectedCaseId((prev) => (prev && data.some(c => c.case_id === prev) ? prev : data[0].case_id));
+            }
+          }
+        });
+    }
+  }, [showModal]);
 
   const handleSubmitEvidence = (e) => {
     e.preventDefault();

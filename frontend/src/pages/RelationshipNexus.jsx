@@ -23,6 +23,7 @@ export default function RelationshipNexus({ focusCaseId }) {
   const [filterType, setFilterType] = useState('ALL');
   const [minScore, setMinScore] = useState(0);
   const [selectedLink, setSelectedLink] = useState(null);
+  const [casesList, setCasesList] = useState([]);
 
   // DRIA Simulator State
   const [simType, setSimType] = useState('Phone');
@@ -56,6 +57,17 @@ export default function RelationshipNexus({ focusCaseId }) {
       .then((data) => {
         if (data && data.nodes) {
           setGraphData(data);
+        }
+      });
+
+    fetch(`/api/cases?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCasesList(data);
+          if (data.length > 0 && !data.some(c => c.case_id === simSourceCase)) {
+            setSimSourceCase(data[0].case_id);
+          }
         }
       });
   };
@@ -304,9 +316,17 @@ export default function RelationshipNexus({ focusCaseId }) {
               onChange={(e) => setSimSourceCase(e.target.value)}
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white font-mono"
             >
-              <option value="C250">Case C250 (Tech Park Homicide)</option>
-              <option value="C101">Case C101 (Commercial Bank Heist)</option>
-              <option value="C300">Case C300 (Seaport Narcotics)</option>
+              {casesList.length > 0 ? (
+                casesList.map((c) => (
+                  <option key={c.case_id} value={c.case_id}>Case {c.case_id} ({c.case_title})</option>
+                ))
+              ) : (
+                <>
+                  <option value="C250">Case C250 (Tech Park Homicide)</option>
+                  <option value="C101">Case C101 (Commercial Bank Heist)</option>
+                  <option value="C300">Case C300 (Seaport Narcotics)</option>
+                </>
+              )}
             </select>
           </div>
 

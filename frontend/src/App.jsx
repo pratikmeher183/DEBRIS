@@ -8,7 +8,6 @@ import EvidenceManagement from './pages/EvidenceManagement';
 import PersonManagement from './pages/PersonManagement';
 import RelationshipNexus from './pages/RelationshipNexus';
 import Analytics from './pages/Analytics';
-import DocsViewer from './pages/DocsViewer';
 
 export default function App() {
   const [user, setUser] = useState({
@@ -61,7 +60,6 @@ export default function App() {
           {activeTab === 'persons' && <PersonManagement />}
           {activeTab === 'nexus' && <RelationshipNexus focusCaseId={focusCaseId} />}
           {activeTab === 'analytics' && <Analytics />}
-          {activeTab === 'docs' && <DocsViewer />}
         </main>
       </div>
     </div>
