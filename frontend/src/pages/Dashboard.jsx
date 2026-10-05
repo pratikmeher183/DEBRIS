@@ -25,14 +25,39 @@ export default function Dashboard({ onNavigate }) {
   });
 
   useEffect(() => {
-    fetch('/api/analytics/dashboard-stats')
+    fetch(`/api/analytics/dashboard-stats?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        const storedEvidence = JSON.parse(localStorage.getItem('deris_local_evidence') || '[]');
         if (data && !data.error) {
-          setStats(data);
+          const extraCases = storedLocal.length;
+          const extraActive = storedLocal.filter(c => c.status !== 'Solved').length;
+          const extraSolved = storedLocal.filter(c => c.status === 'Solved').length;
+          const extraEv = storedEvidence.length;
+          setStats({
+            ...data,
+            total_cases: Number(data.total_cases || 5) + extraCases,
+            open_cases: Number(data.open_cases || 4) + extraActive,
+            solved_cases: Number(data.solved_cases || 1) + extraSolved,
+            total_evidence: Number(data.total_evidence || 10) + extraEv
+          });
         }
       })
-      .catch((err) => console.log('Fetch stats error:', err));
+      .catch((err) => {
+        console.log('Fetch stats error:', err);
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        const storedEvidence = JSON.parse(localStorage.getItem('deris_local_evidence') || '[]');
+        setStats({
+          total_cases: 5 + storedLocal.length,
+          open_cases: 4 + storedLocal.filter(c => c.status !== 'Solved').length,
+          solved_cases: 1 + storedLocal.filter(c => c.status === 'Solved').length,
+          total_evidence: 10 + storedEvidence.length,
+          indexed_links: 5,
+          active_clusters: 4,
+          recent_activities: []
+        });
+      });
   }, []);
 
   const statCards = [

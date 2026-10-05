@@ -35,12 +35,27 @@ export default function CaseManagement({ onNavigateToNexus }) {
   });
 
   const fetchCases = () => {
-    fetch('/api/cases')
+    fetch(`/api/cases?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setCases(data);
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        if (Array.isArray(data)) {
+          const merged = [...data];
+          storedLocal.forEach((lc) => {
+            if (!merged.some((c) => c.case_id === lc.case_id)) {
+              merged.unshift(lc);
+            }
+          });
+          setCases(merged);
+        } else if (storedLocal.length > 0) {
+          setCases(storedLocal);
+        }
       })
-      .catch((err) => console.log('Error fetching cases:', err));
+      .catch((err) => {
+        console.log('Error fetching cases from API:', err);
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        if (storedLocal.length > 0) setCases(storedLocal);
+      });
   };
 
   useEffect(() => {
@@ -53,9 +68,35 @@ export default function CaseManagement({ onNavigateToNexus }) {
       .then((data) => {
         if (data && !data.error) {
           setSelectedCase(data);
+        } else {
+          const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+          const found = storedLocal.find((c) => c.case_id === caseId);
+          if (found) {
+            setSelectedCase({
+              ...found,
+              evidence: [],
+              suspects: [],
+              victims: [],
+              witnesses: [],
+              connections: []
+            });
+          }
         }
       })
-      .catch((err) => console.log('Error loading case detail:', err));
+      .catch((err) => {
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        const found = storedLocal.find((c) => c.case_id === caseId);
+        if (found) {
+          setSelectedCase({
+            ...found,
+            evidence: [],
+            suspects: [],
+            victims: [],
+            witnesses: [],
+            connections: []
+          });
+        }
+      });
   };
 
   const handleMarkSolved = (caseId, title) => {
@@ -66,6 +107,11 @@ export default function CaseManagement({ onNavigateToNexus }) {
     })
       .then((res) => res.json())
       .then((data) => {
+        // Update local storage status if present
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        const updatedLocal = storedLocal.map((c) => (c.case_id === caseId ? { ...c, status: 'Solved' } : c));
+        localStorage.setItem('deris_local_cases', JSON.stringify(updatedLocal));
+
         fetchCases();
         if (selectedCase && selectedCase.case_id === caseId) {
           setSelectedCase({ ...selectedCase, status: 'Solved' });
@@ -89,6 +135,27 @@ export default function CaseManagement({ onNavigateToNexus }) {
         if (!res.ok || data.error) {
           throw new Error(data.error || 'Failed to register case');
         }
+
+        // Persist newly created case in localStorage
+        const newCaseObj = {
+          case_id: data.case_id,
+          fir_id: `FIR-${Date.now()}`,
+          fir_number: data.fir_number || `FIR-2026-${Math.floor(100 + Math.random() * 900)}`,
+          case_title: formData.case_title,
+          crime_type: formData.crime_type,
+          status: 'Active',
+          priority: formData.priority,
+          lead_officer_id: 'OFF-102',
+          lead_officer_name: 'Inspector Rahul Verma',
+          location: formData.location || 'Bhubaneswar',
+          total_evidence: 0,
+          linked_cases_count: 0,
+          created_at: new Date().toISOString()
+        };
+
+        const existingLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        localStorage.setItem('deris_local_cases', JSON.stringify([newCaseObj, ...existingLocal]));
+
         setShowModal(false);
         fetchCases();
         setFormData({

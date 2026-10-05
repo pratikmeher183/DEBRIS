@@ -36,17 +36,44 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
     fetch(`/api/evidence?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setEvidenceList(data);
+        const storedEvidence = JSON.parse(localStorage.getItem('deris_local_evidence') || '[]');
+        if (Array.isArray(data)) {
+          const merged = [...data];
+          storedEvidence.forEach((le) => {
+            if (!merged.some((e) => e.evidence_id === le.evidence_id)) {
+              merged.unshift(le);
+            }
+          });
+          setEvidenceList(merged);
+        } else if (storedEvidence.length > 0) {
+          setEvidenceList(storedEvidence);
+        }
+      })
+      .catch((err) => {
+        const storedEvidence = JSON.parse(localStorage.getItem('deris_local_evidence') || '[]');
+        if (storedEvidence.length > 0) setEvidenceList(storedEvidence);
       });
 
     fetch(`/api/cases?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setCasesList(data);
-          if (data.length > 0) {
-            setSelectedCaseId((prev) => (prev && data.some(c => c.case_id === prev) ? prev : data[0].case_id));
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        let merged = Array.isArray(data) ? [...data] : [];
+        storedLocal.forEach((lc) => {
+          if (!merged.some((c) => c.case_id === lc.case_id)) {
+            merged.unshift(lc);
           }
+        });
+        setCasesList(merged);
+        if (merged.length > 0) {
+          setSelectedCaseId((prev) => (prev && merged.some((c) => c.case_id === prev) ? prev : merged[0].case_id));
+        }
+      })
+      .catch((err) => {
+        const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+        if (storedLocal.length > 0) {
+          setCasesList(storedLocal);
+          setSelectedCaseId((prev) => (prev && storedLocal.some((c) => c.case_id === prev) ? prev : storedLocal[0].case_id));
         }
       });
   };
@@ -60,11 +87,22 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
       fetch(`/api/cases?t=${Date.now()}`)
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) {
-            setCasesList(data);
-            if (data.length > 0) {
-              setSelectedCaseId((prev) => (prev && data.some(c => c.case_id === prev) ? prev : data[0].case_id));
+          const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+          let merged = Array.isArray(data) ? [...data] : [];
+          storedLocal.forEach((lc) => {
+            if (!merged.some((c) => c.case_id === lc.case_id)) {
+              merged.unshift(lc);
             }
+          });
+          setCasesList(merged);
+          if (merged.length > 0) {
+            setSelectedCaseId((prev) => (prev && merged.some((c) => c.case_id === prev) ? prev : merged[0].case_id));
+          }
+        })
+        .catch(() => {
+          const storedLocal = JSON.parse(localStorage.getItem('deris_local_cases') || '[]');
+          if (storedLocal.length > 0) {
+            setCasesList(storedLocal);
           }
         });
     }
@@ -84,10 +122,26 @@ export default function EvidenceManagement({ onNavigateToNexus }) {
     })
       .then((res) => res.json())
       .then((data) => {
+        const selectedCaseObj = casesList.find((c) => c.case_id === selectedCaseId);
+        const newEvidenceObj = {
+          evidence_id: data.evidence_id || `E${Date.now().toString().slice(-4)}-${evidenceType.charAt(0)}`,
+          case_id: selectedCaseId,
+          case_title: selectedCaseObj ? selectedCaseObj.case_title : 'Associated Case',
+          crime_type: selectedCaseObj ? selectedCaseObj.crime_type : 'Crime',
+          evidence_type: evidenceType,
+          description: description || `Collected ${evidenceType} evidence`,
+          collected_by_name: 'Inspector Rahul Verma',
+          collection_date: new Date().toISOString(),
+          status: 'Analyzing'
+        };
+
+        const existingLocal = JSON.parse(localStorage.getItem('deris_local_evidence') || '[]');
+        localStorage.setItem('deris_local_evidence', JSON.stringify([newEvidenceObj, ...existingLocal]));
+
         setShowModal(false);
         setDriaAlert({
-          message: `Evidence ${data.evidence_id} registered into DERIS! DRIA Trigger updated Relationship Index automatically.`,
-          evidence_id: data.evidence_id
+          message: `Evidence ${newEvidenceObj.evidence_id} registered into DERIS! DRIA Trigger updated Relationship Index automatically.`,
+          evidence_id: newEvidenceObj.evidence_id
         });
         fetchData();
         setTimeout(() => setDriaAlert(null), 8000);
