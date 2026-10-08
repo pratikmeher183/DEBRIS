@@ -10,19 +10,36 @@ import RelationshipNexus from './pages/RelationshipNexus';
 import Analytics from './pages/Analytics';
 
 export default function App() {
-  const [user, setUser] = useState({
-    officer_id: 'BADGE-102',
-    badge_number: 'BADGE-102',
-    name: 'Inspector Rahul Verma',
-    rank: 'Senior Inspector',
-    email: 'rahul.verma@deris.gov',
-    role: 'Investigation Officer',
-    station_name: 'Central Crime Branch HQ'
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('deris_current_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [focusCaseId, setFocusCaseId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogin = (officerData) => {
+    setUser(officerData);
+    try {
+      localStorage.setItem('deris_current_user', JSON.stringify(officerData));
+    } catch (e) {
+      console.error('Failed to save session:', e);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    try {
+      localStorage.removeItem('deris_current_user');
+    } catch (e) {
+      console.error('Failed to clear session:', e);
+    }
+  };
 
   const handleNavigateToNexus = (caseId = null) => {
     setFocusCaseId(caseId);
@@ -30,7 +47,7 @@ export default function App() {
   };
 
   if (!user) {
-    return <Login onLogin={(u) => setUser(u)} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   return (
@@ -38,7 +55,7 @@ export default function App() {
       {/* Top Navigation Bar */}
       <Navbar 
         user={user} 
-        onLogout={() => setUser(null)} 
+        onLogout={handleLogout} 
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 

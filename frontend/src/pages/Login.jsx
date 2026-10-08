@@ -1,12 +1,40 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Shield, Award, User, Lock, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { 
+  ShieldAlert, 
+  Shield, 
+  User, 
+  Lock, 
+  ArrowRight, 
+  AlertCircle, 
+  CheckCircle,
+  BadgeCheck,
+  Mail,
+  Building2,
+  Award,
+  UserPlus,
+  LogIn
+} from 'lucide-react';
 
 export default function Login({ onLogin }) {
-  const [username, setUsername] = useState('BADGE-102');
-  const [password, setPassword] = useState('officer123');
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot'
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+
+  // Login Form State
+  const [username, setUsername] = useState('BADGE-102');
+  const [password, setPassword] = useState('officer123');
+
+  // Sign Up Form State
+  const [signupData, setSignupData] = useState({
+    name: '',
+    badge_number: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    rank: 'Senior Inspector',
+    role: 'Investigation Officer',
+    station_name: 'Central Crime Branch HQ'
+  });
 
   const demoOfficers = [
     {
@@ -32,6 +60,13 @@ export default function Login({ onLogin }) {
     }
   ];
 
+  const handleSignupChange = (e) => {
+    setSignupData({
+      ...signupData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -42,59 +77,130 @@ export default function Login({ onLogin }) {
       return;
     }
 
+    // SIGN UP WORKFLOW
     if (mode === 'signup') {
-      setNotice('Account registration request submitted to Police Admin for badge verification.');
+      if (!signupData.name || !signupData.badge_number || !signupData.email || !signupData.password) {
+        setError('Please fill in all required officer registration fields.');
+        return;
+      }
+
+      if (signupData.password !== signupData.confirmPassword) {
+        setError('Passwords do not match. Please re-enter your password.');
+        return;
+      }
+
+      const payload = {
+        name: signupData.name,
+        badge_number: signupData.badge_number,
+        email: signupData.email,
+        password: signupData.password,
+        rank: signupData.rank,
+        role: signupData.role,
+        station_name: signupData.station_name
+      };
+
+      fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok || data.error) {
+            throw new Error(data.error || 'Failed to register officer account.');
+          }
+          return data;
+        })
+        .then((data) => {
+          // Persist officer in localStorage for client-side persistence
+          const existingLocal = JSON.parse(localStorage.getItem('deris_local_officers') || '[]');
+          localStorage.setItem('deris_local_officers', JSON.stringify([data.user, ...existingLocal]));
+
+          setNotice(`Officer ${data.user.name} registered successfully! Opening DERIS...`);
+          setTimeout(() => {
+            onLogin(data.user);
+          }, 1200);
+        })
+        .catch((err) => {
+          // Local fallback registration
+          const localUser = {
+            officer_id: `OFF-${Date.now().toString().slice(-4)}`,
+            badge_number: signupData.badge_number,
+            name: signupData.name,
+            rank: signupData.rank,
+            email: signupData.email,
+            role: signupData.role,
+            station_name: signupData.station_name,
+            password_hash: signupData.password
+          };
+          const existingLocal = JSON.parse(localStorage.getItem('deris_local_officers') || '[]');
+          localStorage.setItem('deris_local_officers', JSON.stringify([localUser, ...existingLocal]));
+
+          setNotice(`Officer ${localUser.name} registered! Opening DERIS...`);
+          setTimeout(() => {
+            onLogin(localUser);
+          }, 1000);
+        });
       return;
     }
 
-    // Login Authentication
+    // LOGIN WORKFLOW
     fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: username, password, badge: username })
+      body: JSON.stringify({ email: username, badge: username, password })
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Invalid credentials');
+        }
+        return data;
+      })
       .then((data) => {
         if (data && data.user) {
           onLogin(data.user);
         } else {
-          // Fallback demo officer matching badge
-          const matched = demoOfficers.find(o => o.badge.toLowerCase() === username.toLowerCase() || o.email.toLowerCase() === username.toLowerCase());
-          if (matched) {
-            onLogin({
-              officer_id: matched.badge,
-              badge_number: matched.badge,
-              name: matched.name,
-              rank: matched.role === 'Admin' ? 'Commissioner' : matched.role === 'Forensic Officer' ? 'Chief Forensic Specialist' : 'Senior Inspector',
-              email: matched.email,
-              role: matched.role,
-              station_name: matched.station
-            });
-          } else {
-            // Log in with entered username as officer
-            onLogin({
-              officer_id: `BADGE-${username}`,
-              badge_number: username,
-              name: `Officer ${username}`,
-              rank: 'Senior Inspector',
-              email: `${username}@deris.gov`,
-              role: 'Investigation Officer',
-              station_name: 'Central Crime Branch HQ'
-            });
-          }
+          throw new Error('User data missing');
         }
       })
       .catch(() => {
-        // Fallback offline login
-        onLogin({
-          officer_id: 'BADGE-102',
-          badge_number: username || 'BADGE-102',
-          name: 'Inspector Rahul Verma',
-          rank: 'Senior Inspector',
-          email: 'rahul.verma@deris.gov',
-          role: 'Investigation Officer',
-          station_name: 'Central Crime Branch HQ'
-        });
+        // Check local registered officers
+        const storedLocalOfficers = JSON.parse(localStorage.getItem('deris_local_officers') || '[]');
+        const matchedLocal = storedLocalOfficers.find(
+          o => (o.badge_number && o.badge_number.toLowerCase() === username.toLowerCase()) || 
+               (o.email && o.email.toLowerCase() === username.toLowerCase())
+        );
+
+        if (matchedLocal) {
+          onLogin(matchedLocal);
+          return;
+        }
+
+        // Fallback demo officer matching badge
+        const matchedDemo = demoOfficers.find(o => o.badge.toLowerCase() === username.toLowerCase() || o.email.toLowerCase() === username.toLowerCase());
+        if (matchedDemo) {
+          onLogin({
+            officer_id: matchedDemo.badge,
+            badge_number: matchedDemo.badge,
+            name: matchedDemo.name,
+            rank: matchedDemo.role === 'Admin' ? 'Commissioner' : matchedDemo.role === 'Forensic Officer' ? 'Chief Forensic Specialist' : 'Senior Inspector',
+            email: matchedDemo.email,
+            role: matchedDemo.role,
+            station_name: matchedDemo.station
+          });
+        } else {
+          // Log in with entered username as officer
+          onLogin({
+            officer_id: `OFF-${Date.now().toString().slice(-4)}`,
+            badge_number: username,
+            name: `Officer ${username}`,
+            rank: 'Senior Inspector',
+            email: `${username}@deris.gov`,
+            role: 'Investigation Officer',
+            station_name: 'Central Crime Branch HQ'
+          });
+        }
       });
   };
 
@@ -118,7 +224,7 @@ export default function Login({ onLogin }) {
       <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-96 sm:h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center z-10">
+      <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center z-10 my-6">
         
         {/* Left Column: DERIS Branding */}
         <div className="space-y-6 pr-0 md:pr-4">
@@ -135,7 +241,7 @@ export default function Login({ onLogin }) {
           <div className="space-y-3">
             <h2 className="text-xl font-bold text-gray-100">Law Enforcement Portal</h2>
             <p className="text-xs text-gray-400 leading-relaxed">
-              "A Novel DBMS-Based Evidence Correlation Framework for Crime Investigation."
+              Secure authentication for law enforcement officers, forensic analysts, and police administration.
             </p>
           </div>
 
@@ -146,7 +252,7 @@ export default function Login({ onLogin }) {
               <span>DBMS Pre-Indexed Relationship Layer</span>
             </div>
             <p className="text-[11px] text-gray-400 leading-relaxed">
-              DRIA triggers automatically correlate incoming evidence across prior cases, replacing heavy multi-table SQL JOIN scans with instant indexed lookups.
+              Authorized officers get instant real-time evidence correlation, criminal history lookup, and automated cross-case relationship indexing.
             </p>
           </div>
 
@@ -172,12 +278,30 @@ export default function Login({ onLogin }) {
           </div>
         </div>
 
-        {/* Right Column: Officer Login Form (Custom Styled Form) */}
+        {/* Right Column: Officer Login / Sign Up Form */}
         <div className="flex justify-center">
-          <form className="deris-login-form w-full max-w-sm" onSubmit={handleFormSubmit}>
-            <p id="heading" className="deris-login-heading">
-              {mode === 'login' ? 'Officer Login' : mode === 'signup' ? 'Officer Registration' : 'Reset Password'}
-            </p>
+          <form className="deris-login-form w-full max-w-md space-y-4" onSubmit={handleFormSubmit}>
+            <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <p id="heading" className="deris-login-heading !m-0">
+                {mode === 'login' ? 'Officer Login' : mode === 'signup' ? 'Officer Sign Up' : 'Reset Password'}
+              </p>
+              <div className="flex items-center space-x-1 bg-gray-900 p-1 rounded-xl border border-gray-800 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setError(''); setNotice(''); }}
+                  className={`px-3 py-1 rounded-lg transition-all ${mode === 'login' ? 'bg-blue-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setError(''); setNotice(''); }}
+                  className={`px-3 py-1 rounded-lg transition-all ${mode === 'signup' ? 'bg-blue-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
 
             {notice && (
               <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center space-x-2">
@@ -193,58 +317,216 @@ export default function Login({ onLogin }) {
               </div>
             )}
 
-            {/* Username / Officer Badge Field */}
-            <div className="field deris-field">
-              <svg className="input-icon deris-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z"></path>
-              </svg>
-              <input
-                autoComplete="off"
-                placeholder="Officer Username / Badge ID"
-                className="input-field deris-input-field"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
+            {/* --- SIGN UP FORM FIELDS --- */}
+            {mode === 'signup' && (
+              <div className="space-y-3 text-left">
+                {/* Name Field */}
+                <div className="field deris-field">
+                  <User className="w-4 h-4 text-gray-500 ml-2" />
+                  <input
+                    name="name"
+                    placeholder="Full Officer Name (e.g. Inspector Amit Das)"
+                    className="input-field deris-input-field"
+                    type="text"
+                    value={signupData.name}
+                    onChange={handleSignupChange}
+                    required
+                  />
+                </div>
 
-            {/* Password Field */}
-            {mode !== 'forgot' && (
-              <div className="field deris-field">
-                <svg className="input-icon deris-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
-                </svg>
-                <input
-                  placeholder="Password"
-                  className="input-field deris-input-field"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                {/* Badge Number & Email Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="field deris-field">
+                    <BadgeCheck className="w-4 h-4 text-gray-500 ml-2" />
+                    <input
+                      name="badge_number"
+                      placeholder="Badge ID (e.g. BADGE-105)"
+                      className="input-field deris-input-field"
+                      type="text"
+                      value={signupData.badge_number}
+                      onChange={handleSignupChange}
+                      required
+                    />
+                  </div>
+                  <div className="field deris-field">
+                    <Mail className="w-4 h-4 text-gray-500 ml-2" />
+                    <input
+                      name="email"
+                      placeholder="Officer Email"
+                      className="input-field deris-input-field"
+                      type="email"
+                      value={signupData.email}
+                      onChange={handleSignupChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Rank & Role Select Dropdowns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">Rank / Designation</label>
+                    <select
+                      name="rank"
+                      value={signupData.rank}
+                      onChange={handleSignupChange}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="Senior Inspector">Senior Inspector</option>
+                      <option value="Inspector">Inspector</option>
+                      <option value="Sub-Inspector">Sub-Inspector</option>
+                      <option value="Commissioner">Commissioner</option>
+                      <option value="Chief Forensic Specialist">Chief Forensic Specialist</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">Department Role</label>
+                    <select
+                      name="role"
+                      value={signupData.role}
+                      onChange={handleSignupChange}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="Investigation Officer">Investigation Officer</option>
+                      <option value="Forensic Officer">Forensic Officer</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Police Station Dropdown */}
+                <div>
+                  <label className="block text-[11px] text-gray-400 font-semibold mb-1">Assigned Police Station</label>
+                  <select
+                    name="station_name"
+                    value={signupData.station_name}
+                    onChange={handleSignupChange}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Central Crime Branch HQ">Central Crime Branch HQ</option>
+                    <option value="Metro Zone Police Station">Metro Zone Police Station</option>
+                    <option value="State Police Command">State Police Command</option>
+                    <option value="State Forensic Science Lab">State Forensic Science Lab</option>
+                  </select>
+                </div>
+
+                {/* Password & Confirm Password Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="field deris-field">
+                    <Lock className="w-4 h-4 text-gray-500 ml-2" />
+                    <input
+                      name="password"
+                      placeholder="Password"
+                      className="input-field deris-input-field"
+                      type="password"
+                      value={signupData.password}
+                      onChange={handleSignupChange}
+                      required
+                    />
+                  </div>
+                  <div className="field deris-field">
+                    <Lock className="w-4 h-4 text-gray-500 ml-2" />
+                    <input
+                      name="confirmPassword"
+                      placeholder="Confirm Password"
+                      className="input-field deris-input-field"
+                      type="password"
+                      value={signupData.confirmPassword}
+                      onChange={handleSignupChange}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Buttons Row */}
-            <div className="btn">
-              <button type="submit" className="button1">
-                {mode === 'login' ? 'Login' : mode === 'signup' ? 'Submit' : 'Reset'}
+            {/* --- LOGIN FORM FIELDS --- */}
+            {mode === 'login' && (
+              <div className="space-y-3">
+                {/* Username / Officer Badge Field */}
+                <div className="field deris-field">
+                  <BadgeCheck className="w-4 h-4 text-gray-500 ml-2" />
+                  <input
+                    autoComplete="off"
+                    placeholder="Officer Badge ID or Email"
+                    className="input-field deris-input-field"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Password Field */}
+                <div className="field deris-field">
+                  <Lock className="w-4 h-4 text-gray-500 ml-2" />
+                  <input
+                    placeholder="Password"
+                    className="input-field deris-input-field"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* --- FORGOT PASSWORD FIELDS --- */}
+            {mode === 'forgot' && (
+              <div className="space-y-3">
+                <div className="field deris-field">
+                  <Mail className="w-4 h-4 text-gray-500 ml-2" />
+                  <input
+                    placeholder="Registered Department Email"
+                    className="input-field deris-input-field"
+                    type="email"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Action Submit Buttons */}
+            <div className="btn pt-2">
+              <button type="submit" className="button1 flex items-center justify-center space-x-2">
+                {mode === 'login' ? (
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    <span>Login to DERIS</span>
+                  </>
+                ) : mode === 'signup' ? (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Complete Officer Registration</span>
+                  </>
+                ) : (
+                  <span>Send Reset Request</span>
+                )}
               </button>
+
               <button
                 type="button"
                 className="button2"
-                onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
+                onClick={() => {
+                  setMode(mode === 'signup' ? 'login' : 'signup');
+                  setError('');
+                  setNotice('');
+                }}
               >
-                {mode === 'signup' ? 'Back' : 'Sign Up'}
+                {mode === 'signup' ? 'Back to Login' : 'Officer Sign Up'}
               </button>
             </div>
 
-            {/* Forgot Password Button */}
+            {/* Forgot Password Link */}
             <button
               type="button"
               className="button3"
-              onClick={() => setMode(mode === 'forgot' ? 'login' : 'forgot')}
+              onClick={() => {
+                setMode(mode === 'forgot' ? 'login' : 'forgot');
+                setError('');
+                setNotice('');
+              }}
             >
               {mode === 'forgot' ? 'Back to Login' : 'Forgot Password?'}
             </button>
@@ -255,3 +537,4 @@ export default function Login({ onLogin }) {
     </div>
   );
 }
+
