@@ -76,137 +76,263 @@ export default function RelationshipNexus({ focusCaseId }) {
     fetchNexusData();
   }, [focusCaseId]);
 
-  // Interactive HTML5 Canvas Graph Physics Rendering Engine
+  // Interactive HTML5 Canvas Graph Physics & Layout Engine
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const nodePositionsRef = useRef({});
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !graphData.nodes.length) return;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
 
-    const width = canvas.width = canvas.parentElement.clientWidth;
-    const height = canvas.height = 420;
+    const width = canvas.width = canvas.parentElement.clientWidth || 900;
+    const height = canvas.height = 500;
 
-    // Initialize node coordinates if not present
+    // Distribute nodes evenly in a wide circle with repulsion spacing
+    const totalNodes = graphData.nodes.length;
+    const caseNodes = graphData.nodes.filter(n => n.type === 'Case');
+    const suspectNodes = graphData.nodes.filter(n => n.type === 'Suspect');
+
     const nodes = graphData.nodes.map((n, idx) => {
-      const angle = (idx / graphData.nodes.length) * Math.PI * 2;
-      const radius = 130 + (idx % 2) * 50;
+      if (!nodePositionsRef.current[n.id]) {
+        if (n.type === 'Case') {
+          const caseIdx = caseNodes.findIndex(cn => cn.id === n.id);
+          const angle = (caseIdx / Math.max(caseNodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          const radius = Math.min(width, height) * 0.36;
+          nodePositionsRef.current[n.id] = {
+            x: width / 2 + Math.cos(angle) * radius,
+            y: height / 2 + Math.sin(angle) * radius
+          };
+        } else {
+          const suspIdx = suspectNodes.findIndex(sn => sn.id === n.id);
+          const angle = (suspIdx / Math.max(suspectNodes.length, 1)) * Math.PI * 2;
+          const radius = Math.min(width, height) * 0.22;
+          nodePositionsRef.current[n.id] = {
+            x: width / 2 + Math.cos(angle) * radius,
+            y: height / 2 + Math.sin(angle) * radius
+          };
+        }
+      }
       return {
         ...n,
-        x: n.x || width / 2 + Math.cos(angle) * radius,
-        y: n.y || height / 2 + Math.sin(angle) * radius,
-        vx: 0,
-        vy: 0
+        x: nodePositionsRef.current[n.id].x,
+        y: nodePositionsRef.current[n.id].y
       };
     });
 
     const edges = graphData.edges;
 
+    // Helper function for rounded rectangle pills
+    const drawRoundRect = (x, y, w, h, radius, fillStyle, strokeStyle) => {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+      if (fillStyle) {
+        ctx.fillStyle = fillStyle;
+        ctx.fill();
+      }
+      if (strokeStyle) {
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    };
+
+    // Edge color mapping by match type
+    const getEdgeColor = (matchType) => {
+      switch (matchType) {
+        case 'Phone': return '#06B6D4';
+        case 'Vehicle': return '#F59E0B';
+        case 'Weapon': return '#F43F5E';
+        case 'Fingerprint': return '#10B981';
+        case 'DNA': return '#818CF8';
+        case 'Location': return '#A855F7';
+        default: return '#3B82F6';
+      }
+    };
+
     const render = () => {
       ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.scale(zoomLevel, zoomLevel);
 
       // Draw Grid Lines background
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       ctx.lineWidth = 1;
-      for (let x = 0; x < width; x += 30) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+      for (let x = 0; x < width / zoomLevel; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height / zoomLevel); ctx.stroke();
       }
-      for (let y = 0; y < height; y += 30) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+      for (let y = 0; y < height / zoomLevel; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width / zoomLevel, y); ctx.stroke();
       }
 
-      // Draw Edges
-      edges.forEach((edge) => {
+      // Draw Edges with Staggered Score Badges
+      edges.forEach((edge, edgeIdx) => {
         const sourceNode = nodes.find((n) => n.id === edge.source);
         const targetNode = nodes.find((n) => n.id === edge.target);
 
         if (sourceNode && targetNode) {
           const isSelected = selectedNode && (selectedNode.id === sourceNode.id || selectedNode.id === targetNode.id);
-          
+          const isCorrelation = edge.type === 'Correlation';
+          const edgeColor = isCorrelation ? getEdgeColor(edge.match_type) : 'rgba(156, 163, 175, 0.35)';
+
           ctx.beginPath();
           ctx.moveTo(sourceNode.x, sourceNode.y);
           ctx.lineTo(targetNode.x, targetNode.y);
-          
-          if (edge.type === 'Correlation') {
-            ctx.strokeStyle = isSelected ? '#06B6D4' : 'rgba(59, 130, 246, 0.6)';
-            ctx.lineWidth = isSelected ? 3 : 2;
-            ctx.setLineDash([5, 5]);
+
+          ctx.strokeStyle = isSelected ? '#38BDF8' : edgeColor;
+          ctx.lineWidth = isSelected ? 3 : isCorrelation ? 2 : 1.2;
+          if (isCorrelation) {
+            ctx.setLineDash([6, 4]);
           } else {
-            ctx.strokeStyle = 'rgba(156, 163, 175, 0.3)';
-            ctx.lineWidth = 1;
             ctx.setLineDash([]);
           }
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Edge Label (Match Type & Score)
-          if (edge.type === 'Correlation') {
-            const midX = (sourceNode.x + targetNode.x) / 2;
-            const midY = (sourceNode.y + targetNode.y) / 2;
-            ctx.fillStyle = '#0B0F19';
-            ctx.fillRect(midX - 25, midY - 10, 50, 18);
-            ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
-            ctx.strokeRect(midX - 25, midY - 10, 50, 18);
-            ctx.fillStyle = '#38BDF8';
-            ctx.font = '10px monospace';
-            ctx.fillText(`${edge.score}%`, midX - 12, midY + 3);
+          // Staggered Edge Score Badges to prevent overlapping
+          if (isCorrelation) {
+            const fraction = 0.35 + ((edgeIdx % 3) * 0.15);
+            const badgeX = sourceNode.x + (targetNode.x - sourceNode.x) * fraction;
+            const badgeY = sourceNode.y + (targetNode.y - sourceNode.y) * fraction;
+
+            const badgeText = `${edge.match_type || 'Match'}: ${edge.score}%`;
+            ctx.font = 'bold 9px monospace';
+            const textWidth = ctx.measureText(badgeText).width;
+            const boxW = textWidth + 14;
+            const boxH = 18;
+
+            drawRoundRect(
+              badgeX - boxW / 2, 
+              badgeY - boxH / 2, 
+              boxW, 
+              boxH, 
+              5, 
+              '#0F172A', 
+              isSelected ? '#38BDF8' : edgeColor
+            );
+
+            ctx.fillStyle = edgeColor;
+            ctx.fillText(badgeText, badgeX - textWidth / 2, badgeY + 3);
           }
         }
       });
 
-      // Draw Nodes
+      // Draw Nodes with Crisp Pill Labels
       nodes.forEach((node) => {
         const isSelected = selectedNode && selectedNode.id === node.id;
+        const isHovered = hoveredNode && hoveredNode.id === node.id;
         const isCase = node.type === 'Case';
 
-        // Outer Glow
-        if (isSelected || isCase) {
+        // Outer Glow Circle
+        if (isSelected || isHovered || isCase) {
           ctx.beginPath();
-          ctx.arc(node.x, node.y, isCase ? 22 : 16, 0, Math.PI * 2);
-          ctx.fillStyle = isCase ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)';
+          ctx.arc(node.x, node.y, isCase ? 24 : 18, 0, Math.PI * 2);
+          ctx.fillStyle = isCase 
+            ? 'rgba(37, 99, 235, 0.25)' 
+            : node.type === 'Suspect' ? 'rgba(245, 158, 11, 0.25)' : 'rgba(6, 182, 212, 0.25)';
           ctx.fill();
         }
 
         // Main Node Circle
         ctx.beginPath();
-        ctx.arc(node.x, node.y, isCase ? 16 : 12, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, isCase ? 18 : 13, 0, Math.PI * 2);
         ctx.fillStyle = isCase ? '#2563EB' : node.type === 'Suspect' ? '#F59E0B' : '#06B6D4';
         ctx.fill();
         ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = isSelected ? 3 : 1.5;
+        ctx.lineWidth = isSelected ? 3 : 1.8;
         ctx.stroke();
 
-        // Node Text
-        ctx.fillStyle = '#F3F4F6';
-        ctx.font = isCase ? 'bold 11px Inter' : '10px Inter';
-        ctx.fillText(node.label, node.x - (node.label.length * 3), node.y + (isCase ? 30 : 24));
+        // Node ID Badge Inside Circle
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.id, node.x, node.y + 3.5);
+
+        // Clean Wrapped Label Pill Below Node
+        const fullTitle = node.label.includes(':') ? node.label.split(':')[1].trim() : node.label;
+        const shortTitle = fullTitle.length > 22 ? fullTitle.substring(0, 20) + '...' : fullTitle;
+        const mainLabel = `${node.id}: ${shortTitle}`;
+
+        ctx.font = '11px Inter';
+        const labelWidth = ctx.measureText(mainLabel).width;
+        const pillW = Math.max(labelWidth + 14, 75);
+        const pillH = 20;
+        const pillX = node.x - pillW / 2;
+        const pillY = node.y + (isCase ? 24 : 18);
+
+        drawRoundRect(pillX, pillY, pillW, pillH, 6, 'rgba(15, 23, 42, 0.92)', isSelected ? '#38BDF8' : 'rgba(51, 65, 85, 0.8)');
+
+        ctx.fillStyle = isSelected ? '#38BDF8' : '#F3F4F6';
+        ctx.font = isCase ? 'bold 10px Inter' : '10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(mainLabel, node.x, pillY + 13.5);
       });
 
+      ctx.restore();
       animationFrameId = requestAnimationFrame(render);
     };
 
     render();
 
-    // Click handler for node selection
-    const handleCanvasClick = (e) => {
+    // Node Dragging & Click Selection Handlers
+    let isDragging = false;
+    let draggedNode = null;
+
+    const getMousePos = (e) => {
       const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      const clicked = nodes.find((n) => {
-        const dist = Math.hypot(n.x - clickX, n.y - clickY);
-        return dist < 20;
-      });
-
-      setSelectedNode(clicked || null);
+      return {
+        x: (e.clientX - rect.left) / zoomLevel,
+        y: (e.clientY - rect.top) / zoomLevel
+      };
     };
 
-    canvas.addEventListener('click', handleCanvasClick);
+    const handleMouseDown = (e) => {
+      const pos = getMousePos(e);
+      const clicked = nodes.find((n) => Math.hypot(n.x - pos.x, n.y - pos.y) < 25);
+      if (clicked) {
+        isDragging = true;
+        draggedNode = clicked;
+        setSelectedNode(clicked);
+      } else {
+        setSelectedNode(null);
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      const pos = getMousePos(e);
+      const hovered = nodes.find((n) => Math.hypot(n.x - pos.x, n.y - pos.y) < 25);
+      setHoveredNode(hovered || null);
+
+      if (isDragging && draggedNode) {
+        draggedNode.x = pos.x;
+        draggedNode.y = pos.y;
+        nodePositionsRef.current[draggedNode.id] = { x: pos.x, y: pos.y };
+      }
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+      draggedNode = null;
+    };
+
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      canvas.removeEventListener('click', handleCanvasClick);
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [graphData, selectedNode]);
+  }, [graphData, selectedNode, zoomLevel, hoveredNode]);
 
   // Run DRIA Live Simulation
   const handleRunSimulation = () => {
@@ -273,26 +399,67 @@ export default function RelationshipNexus({ focusCaseId }) {
 
       {/* Hero Canvas Network Graph Visualization */}
       <div className="glass-panel p-5 rounded-3xl border border-gray-800 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
-            <Network className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-bold text-white">Interactive Case Investigation Network Graph</h2>
+            <Network className="w-5 h-5 text-cyan-400" />
+            <div>
+              <h2 className="text-sm font-bold text-white flex items-center space-x-2">
+                <span>Interactive Case Investigation Network Graph</span>
+                <span className="text-[10px] text-cyan-400 font-mono bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">DRAG NODES TO MOVE</span>
+              </h2>
+              <p className="text-[11px] text-gray-400">Click & drag any node to reposition • Hover over nodes to inspect details</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-            <span className="flex items-center space-x-1.5 text-blue-400"><span className="w-3 h-3 rounded-full bg-blue-600 inline-block"></span><span>Case Nodes</span></span>
-            <span className="flex items-center space-x-1.5 text-amber-400"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>Suspects</span></span>
-            <span className="flex items-center space-x-1.5 text-cyan-400"><span className="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span><span>DRIA Correlations</span></span>
+
+          {/* Graph Zoom & Control Buttons */}
+          <div className="flex items-center space-x-2 text-xs">
+            <button
+              onClick={() => setZoomLevel((prev) => Math.min(prev + 0.15, 2.0))}
+              className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-mono font-bold"
+              title="Zoom In"
+            >
+              + Zoom
+            </button>
+            <button
+              onClick={() => setZoomLevel((prev) => Math.max(prev - 0.15, 0.6))}
+              className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-mono font-bold"
+              title="Zoom Out"
+            >
+              - Zoom
+            </button>
+            <button
+              onClick={() => { setZoomLevel(1); nodePositionsRef.current = {}; }}
+              className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 border border-cyan-800 font-mono font-bold"
+              title="Reset View"
+            >
+              Reset
+            </button>
           </div>
         </div>
 
-        <div className="relative w-full rounded-2xl overflow-hidden bg-gray-950/80 border border-gray-800/80">
-          <canvas ref={canvasRef} className="w-full cursor-pointer" />
+        {/* Evidence Type Match Legend Row */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-[11px] p-2.5 rounded-xl bg-gray-900/80 border border-gray-800/80">
+          <span className="text-gray-400 font-mono font-bold uppercase text-[10px]">Evidence Match Types:</span>
+          <span className="flex items-center space-x-1.5 text-cyan-400"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span><span>📱 Phone</span></span>
+          <span className="flex items-center space-x-1.5 text-amber-400"><span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span>🚗 Vehicle</span></span>
+          <span className="flex items-center space-x-1.5 text-rose-400"><span className="w-2.5 h-2.5 rounded-full bg-rose-400"></span><span>⚔️ Weapon</span></span>
+          <span className="flex items-center space-x-1.5 text-indigo-400"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400"></span><span>🧬 DNA</span></span>
+          <span className="flex items-center space-x-1.5 text-emerald-400"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span>🖐️ Fingerprint</span></span>
+          <span className="flex items-center space-x-1.5 text-violet-400"><span className="w-2.5 h-2.5 rounded-full bg-violet-400"></span><span>📍 Location</span></span>
+        </div>
+
+        <div className="relative w-full rounded-2xl overflow-hidden bg-[#070A12] border border-gray-800/80">
+          <canvas ref={canvasRef} className="w-full cursor-grab active:cursor-grabbing" />
           {selectedNode && (
-            <div className="absolute top-4 right-4 p-4 rounded-xl bg-gray-900/90 border border-cyan-500/40 text-xs space-y-1 shadow-2xl max-w-xs">
-              <div className="font-bold text-white">{selectedNode.label}</div>
-              <div className="text-gray-400">Type: <span className="text-cyan-400 font-mono">{selectedNode.type}</span></div>
-              {selectedNode.crime_type && <div className="text-gray-400">Crime: {selectedNode.crime_type}</div>}
-              {selectedNode.phone && <div className="text-gray-400">Phone: {selectedNode.phone}</div>}
+            <div className="absolute top-4 right-4 p-4 rounded-xl bg-gray-900/95 border border-cyan-500/50 text-xs space-y-1.5 shadow-2xl max-w-xs backdrop-blur-md">
+              <div className="font-bold text-white flex items-center justify-between">
+                <span>{selectedNode.label}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">{selectedNode.type}</span>
+              </div>
+              {selectedNode.crime_type && <div className="text-gray-300">Crime Type: <span className="text-white font-medium">{selectedNode.crime_type}</span></div>}
+              {selectedNode.status && <div className="text-gray-300">Status: <span className="text-cyan-400 font-mono">{selectedNode.status}</span></div>}
+              {selectedNode.priority && <div className="text-gray-300">Priority: <span className="text-amber-400 font-mono">{selectedNode.priority}</span></div>}
+              {selectedNode.phone && <div className="text-gray-300">Phone: <span className="text-cyan-400 font-mono">{selectedNode.phone}</span></div>}
             </div>
           )}
         </div>

@@ -440,23 +440,30 @@ async function seedSampleData() {
       ('FIR-204', 'FIR-2026-042', 'STN-02', '2026-02-10 22:15:00', 'Grand Theft Auto', 'Highway NH-16 Toll Plaza', 'Investigating', '2026-02-10 23:00:00'),
       ('FIR-250', 'FIR-2026-089', 'STN-01', '2026-03-01 02:45:00', 'Homicide & Extortion', 'Tech Park Tower B Parking', 'Investigating', '2026-03-01 04:00:00'),
       ('FIR-121', 'FIR-2025-310', 'STN-02', '2025-11-20 23:00:00', 'Nightclub Assault', 'Downtown Lounge Alley', 'Under Review', '2025-11-21 01:00:00'),
-      ('FIR-300', 'FIR-2026-105', 'STN-01', '2026-04-05 14:00:00', 'Organized Drug Cartel', 'Seaport Container Yard', 'Investigating', '2026-04-05 15:30:00')`);
+      ('FIR-300', 'FIR-2026-105', 'STN-01', '2026-04-05 14:00:00', 'Organized Drug Cartel', 'Seaport Container Yard', 'Investigating', '2026-04-05 15:30:00'),
+      ('FIR-410', 'FIR-2026-140', 'STN-01', '2026-05-12 09:15:00', 'Cyber Financial Fraud', 'Infocity Tech Park Tower B', 'Investigating', '2026-05-12 10:00:00'),
+      ('FIR-520', 'FIR-2026-188', 'STN-02', '2026-06-01 19:30:00', 'Firearms Trafficking', 'Janpath Market Alley', 'Investigating', '2026-06-01 20:00:00')`);
 
     await dbRun(`INSERT OR IGNORE INTO cases VALUES 
       ('C101', 'FIR-101', 'Commercial Bank Vault Armed Heist', 'Armed Robbery', 'Active', 'Critical', 'OFF-102', '2026-01-15', '2026-01-15'),
       ('C204', 'FIR-204', 'Highway Armored Car Hijacking', 'Grand Theft', 'Active', 'High', 'OFF-103', '2026-02-10', '2026-02-10'),
       ('C250', 'FIR-250', 'Tech Park Tower Homicide & Syndicate Extortion', 'Homicide', 'Active', 'Critical', 'OFF-102', '2026-03-01', '2026-03-01'),
       ('C121', 'FIR-121', 'Downtown Lounge Shooting & Assault', 'Attempted Murder', 'Under Review', 'Medium', 'OFF-103', '2025-11-20', '2025-11-20'),
-      ('C300', 'FIR-300', 'Seaport Narcotics & Weapons Smuggling Ring', 'Organized Crime', 'Active', 'High', 'OFF-102', '2026-04-05', '2026-04-05')`);
+      ('C300', 'FIR-300', 'Seaport Narcotics & Weapons Smuggling Ring', 'Organized Crime', 'Active', 'High', 'OFF-102', '2026-04-05', '2026-04-05'),
+      ('C410', 'FIR-410', 'Infocity Tech Syndicate Cyber Fraud', 'Cyber Extortion', 'Active', 'High', 'OFF-104', '2026-05-12', '2026-05-12'),
+      ('C520', 'FIR-520', 'Janpath Illegal Arms Distribution Heist', 'Firearms Trafficking', 'Active', 'Critical', 'OFF-103', '2026-06-01', '2026-06-01')`);
 
     await dbRun(`INSERT OR IGNORE INTO suspects VALUES 
       ('SUS-101', 'C101', 'Vikram Singh', 'Vicky Viper', '9876543210', 'NID-99201-X', 'Plot 45, Sector 9, Bhubaneswar', 'Under Investigation', 'High'),
       ('SUS-102', 'C250', 'Rohan Mehta', 'Shadow', '9876543210', 'NID-88102-Y', 'Flat 302, Royal Residency, Cuttack', 'Suspect', 'Severe'),
-      ('SUS-103', 'C300', 'Tariq Ahmed', 'Bossman', '9933221100', 'NID-77203-Z', 'Villa 12, Seaport View', 'Arrested', 'Severe')`);
+      ('SUS-103', 'C300', 'Tariq Ahmed', 'Bossman', '9933221100', 'NID-77203-Z', 'Villa 12, Seaport View', 'Arrested', 'Severe'),
+      ('SUS-410', 'C410', 'Sameer Khan', 'Cyber-Ghost', '9933221100', 'NID-66304-W', 'Tower B Suite 404', 'Suspect', 'High'),
+      ('SUS-520', 'C520', 'Dharma Jena', 'Gunner', '9437012345', 'NID-55405-V', 'Old Town Alley 9', 'Under Investigation', 'Severe')`);
 
     await dbRun(`INSERT OR IGNORE INTO victims VALUES 
       ('VIC-101', 'C101', 'Suresh Mohanty', '9437012345', 'Commercial Bank Manager', 'Two masked gunman entered holding tactical weapons.'),
-      ('VIC-250', 'C250', 'Amitabh Roy', '9437099999', 'Tech Corp Executive', 'Deceased in parking garage with multiple wounds.')`);
+      ('VIC-250', 'C250', 'Amitabh Roy', '9437099999', 'Tech Corp Executive', 'Deceased in parking garage with multiple wounds.'),
+      ('VIC-410', 'C410', 'Deepak Swain', '9437088888', 'IT Systems Director', 'Servers encrypted and extortion demand sent.')`);
 
     await dbRun(`INSERT OR IGNORE INTO witnesses VALUES 
       ('WIT-101', 'C101', 'Priya Das', '9123456789', 'Saw blue pickup truck OD05AB1234 speed away.', 90),
@@ -472,19 +479,27 @@ async function seedSampleData() {
       ('E121-W', 'C121', 'Weapon', 'Knife matching signature K102', 'OFF-103', '2025-11-20', 'Forensic Vault B', 'Archived'),
       ('E300-F', 'C300', 'Fingerprint', 'Print found on narcotics package', 'OFF-104', '2026-04-05', 'Biometric Archive', 'Analyzing'),
       ('E204-D', 'C204', 'DNA', 'Blood swab from broken glass', 'OFF-104', '2026-02-10', 'Bio-Lab Freezer 4', 'Analyzing'),
-      ('E300-D', 'C300', 'DNA', 'DNA sample extracted from cigarette butt', 'OFF-104', '2026-04-05', 'Bio-Lab Freezer 4', 'Analyzing')`);
+      ('E300-D', 'C300', 'DNA', 'DNA sample extracted from cigarette butt', 'OFF-104', '2026-04-05', 'Bio-Lab Freezer 4', 'Analyzing'),
+      ('E410-P', 'C410', 'Phone', 'Burner phone used for ransomware SMS dispatch', 'OFF-104', '2026-05-12', 'Digital Evidence Room', 'Analyzing'),
+      ('E410-L', 'C410', 'Location', 'IP router physical location at Tech Park Tower B', 'OFF-104', '2026-05-12', 'Network Logs', 'Analyzing'),
+      ('E520-V', 'C520', 'Vehicle', 'Getaway vehicle registered under OR02X9988', 'OFF-103', '2026-06-01', 'Impound Lot 1', 'Logged'),
+      ('E520-W', 'C520', 'Weapon', 'Automatic pistol matching signature GLOCK-9MM-44', 'OFF-103', '2026-06-01', 'Forensic Vault B', 'Analyzing'),
+      ('E520-D', 'C520', 'DNA', 'Saliva sample on mask matches STR-889', 'OFF-104', '2026-06-01', 'Bio-Lab Freezer 2', 'Analyzing')`);
 
     await dbRun(`INSERT OR IGNORE INTO phones VALUES 
       ('PH-101', 'E101-P', '9876543210', '864201049281045', 'Airtel'),
-      ('PH-250', 'E250-P', '9876543210', '864201049281045', 'Airtel')`);
+      ('PH-250', 'E250-P', '9876543210', '864201049281045', 'Airtel'),
+      ('PH-410', 'E410-P', '9933221100', '864201099881122', 'Jio')`);
 
     await dbRun(`INSERT OR IGNORE INTO vehicles VALUES 
       ('VH-101', 'E101-V', 'OD05AB1234', 'Pickup Truck', 'Mahindra Bolero Blue', 'VIN-MAH-2024-9981'),
-      ('VH-250', 'E250-V', 'OD05AB1234', 'Pickup Truck', 'Mahindra Bolero Blue', 'VIN-MAH-2024-9981')`);
+      ('VH-250', 'E250-V', 'OD05AB1234', 'Pickup Truck', 'Mahindra Bolero Blue', 'VIN-MAH-2024-9981'),
+      ('VH-520', 'E520-V', 'OR02X9988', 'SUV', 'Scorpio Black', 'VIN-SC-2025-4411')`);
 
     await dbRun(`INSERT OR IGNORE INTO weapons VALUES 
       ('WP-101', 'E101-W', 'Tactical Knife', 'SN-K102-BLD', '8-inch serrated', 'SIG-K102-TACTICAL'),
-      ('WP-121', 'E121-W', 'Tactical Knife', 'SN-K102-BLD', '8-inch serrated', 'SIG-K102-TACTICAL')`);
+      ('WP-121', 'E121-W', 'Tactical Knife', 'SN-K102-BLD', '8-inch serrated', 'SIG-K102-TACTICAL'),
+      ('WP-520', 'E520-W', 'Pistol', 'SN-GLK-9921', '9mm Parabellum', 'SIG-GLOCK-9MM-44')`);
 
     await dbRun(`INSERT OR IGNORE INTO fingerprints VALUES 
       ('FP-250', 'E250-F', 'Whorl', 'HASH-FP-9982-MINUTIAE', '/uploads/fp250.png'),
@@ -492,28 +507,39 @@ async function seedSampleData() {
 
     await dbRun(`INSERT OR IGNORE INTO dna_samples VALUES 
       ('DNA-204', 'E204-D', 'D13S317: 11,12; D16S539: 9,13', 'DNA-MATCH-STR-441'),
-      ('DNA-300', 'E300-D', 'D13S317: 11,12; D16S539: 9,13', 'DNA-MATCH-STR-441')`);
+      ('DNA-300', 'E300-D', 'D13S317: 11,12; D16S539: 9,13', 'DNA-MATCH-STR-441'),
+      ('DNA-520', 'E520-D', 'D13S317: 14,15; D16S539: 10,12', 'DNA-MATCH-STR-889')`);
 
-    // DERIS Relationship Index
+    // DERIS Relationship Index (Comprehensive 6 Evidence Type Combinations)
     await dbRun(`INSERT OR IGNORE INTO relationship_index VALUES 
       ('LNK-101-250-PH', 'C250', 'C101', 'E250-P', 'Phone', '9876543210', 98, 'Active', '2026-03-01'),
       ('LNK-101-250-VH', 'C250', 'C101', 'E250-V', 'Vehicle', 'OD05AB1234', 95, 'Active', '2026-03-01'),
       ('LNK-101-121-WP', 'C121', 'C101', 'E121-W', 'Weapon', 'SIG-K102-TACTICAL', 92, 'Active', '2025-11-20'),
       ('LNK-250-300-FP', 'C300', 'C250', 'E300-F', 'Fingerprint', 'HASH-FP-9982-MINUTIAE', 96, 'Active', '2026-04-05'),
-      ('LNK-204-300-DN', 'C300', 'C204', 'E300-D', 'DNA', 'DNA-MATCH-STR-441', 99, 'Active', '2026-04-05')`);
+      ('LNK-204-300-DN', 'C300', 'C204', 'E300-D', 'DNA', 'DNA-MATCH-STR-441', 99, 'Active', '2026-04-05'),
+      ('LNK-300-410-PH', 'C410', 'C300', 'E410-P', 'Phone', '9933221100', 97, 'Active', '2026-05-12'),
+      ('LNK-250-410-LOC', 'C410', 'C250', 'E410-L', 'Location', 'Infocity Tech Park Tower B', 88, 'Active', '2026-05-12'),
+      ('LNK-204-520-VH', 'C520', 'C204', 'E520-V', 'Vehicle', 'OR02X9988', 94, 'Active', '2026-06-01'),
+      ('LNK-250-520-DN', 'C520', 'C250', 'E520-D', 'DNA', 'DNA-MATCH-STR-889', 98, 'Active', '2026-06-01')`);
 
     await dbRun(`INSERT OR IGNORE INTO relationship_history VALUES 
       ('HST-001', 'LNK-101-250-PH', NULL, 98, 'INSERT', 'DRIA_PHONE_TRIGGER', '2026-03-01'),
       ('HST-002', 'LNK-101-250-VH', NULL, 95, 'INSERT', 'DRIA_VEHICLE_TRIGGER', '2026-03-01'),
       ('HST-003', 'LNK-101-121-WP', NULL, 92, 'INSERT', 'DRIA_WEAPON_TRIGGER', '2025-11-20'),
       ('HST-004', 'LNK-250-300-FP', NULL, 96, 'INSERT', 'DRIA_FINGERPRINT_TRIGGER', '2026-04-05'),
-      ('HST-005', 'LNK-204-300-DN', NULL, 99, 'INSERT', 'DRIA_DNA_TRIGGER', '2026-04-05')`);
+      ('HST-005', 'LNK-204-300-DN', NULL, 99, 'INSERT', 'DRIA_DNA_TRIGGER', '2026-04-05'),
+      ('HST-006', 'LNK-300-410-PH', NULL, 97, 'INSERT', 'DRIA_PHONE_TRIGGER', '2026-05-12'),
+      ('HST-007', 'LNK-250-410-LOC', NULL, 88, 'INSERT', 'DRIA_LOCATION_TRIGGER', '2026-05-12'),
+      ('HST-008', 'LNK-204-520-VH', NULL, 94, 'INSERT', 'DRIA_VEHICLE_TRIGGER', '2026-06-01'),
+      ('HST-009', 'LNK-250-520-DN', NULL, 98, 'INSERT', 'DRIA_DNA_TRIGGER', '2026-06-01')`);
 
     await dbRun(`INSERT OR IGNORE INTO investigation_graph VALUES 
       ('GRP-001', 'C250', 'C101', 96, 'Phone, Vehicle', '2026-03-01'),
       ('GRP-002', 'C121', 'C101', 92, 'Weapon', '2025-11-20'),
       ('GRP-003', 'C300', 'C250', 96, 'Fingerprint', '2026-04-05'),
-      ('GRP-004', 'C300', 'C204', 99, 'DNA', '2026-04-05')`);
+      ('GRP-004', 'C300', 'C204', 99, 'DNA', '2026-04-05'),
+      ('GRP-005', 'C410', 'C300', 97, 'Phone', '2026-05-12'),
+      ('GRP-006', 'C520', 'C250', 98, 'DNA', '2026-06-01')`);
 
     console.log('Sample data successfully seeded into DERIS database!');
   } catch (err) {
